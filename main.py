@@ -1,9 +1,10 @@
 import logging
 from aiogram import Bot, Dispatcher, types
-from bot import dp, bot
+from loader import dp, bot
 from dotenv import load_dotenv, find_dotenv
 import os
 from fastapi import FastAPI
+from bot.handlers.user import start
 
 load_dotenv(find_dotenv())
 
@@ -17,6 +18,9 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 WEBHOOK_PATH = f"/bot/{telegram_token}"
 WEBHOOK_URL = f"{ngrok_url}{WEBHOOK_PATH}"
+
+
+start.register_handlers_users(dp)
 
 
 @app.on_event("startup")
