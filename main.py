@@ -12,8 +12,6 @@ telegram_token = os.getenv("TELEGRAM_TOKEN")
 ngrok_url = os.getenv("NGROK_URL")
 admin_id = os.getenv("ADMIN_ID")
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 app = FastAPI()
 WEBHOOK_PATH = f"/bot/{telegram_token}"
