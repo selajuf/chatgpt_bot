@@ -1,10 +1,11 @@
-import logging
 from aiogram import Bot, Dispatcher, types
 from loader import dp, bot
 from dotenv import load_dotenv, find_dotenv
+from bot.misc.set_bot_commands import set_default_commands
 import os
 from fastapi import FastAPI
-from bot.handlers.user import start
+from bot.handlers.user.commands import start
+from bot.handlers.user.communication import chatgpt
 
 load_dotenv(find_dotenv())
 
@@ -19,10 +20,11 @@ WEBHOOK_URL = f"{ngrok_url}{WEBHOOK_PATH}"
 
 
 start.register_handlers_users(dp)
-
+chatgpt.register_handlers_users(dp)
 
 @app.on_event("startup")
 async def on_startup():
+    await set_default_commands(dp)
     await bot.send_message(chat_id=admin_id, text='Бот запущен')
     webhook_info = await bot.get_webhook_info()
     if webhook_info.url != WEBHOOK_URL:
