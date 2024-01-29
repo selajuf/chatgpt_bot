@@ -21,7 +21,6 @@ async def create_user_info(user_id):
     if not user:
         cur.execute("INSERT INTO users_info (tg_user_id, balance) VALUES ({key}, 0)".format(key=user_id))
         db.commit()
-        db.close()
 
 
 # Логирование ответ-вопрос
@@ -30,4 +29,3 @@ async def insert_chatlog(username_tg, question_tg, answer_tg):
     values = (username_tg, question_tg, answer_tg)
     cur.execute(sql, values)
     db.commit()
-    db.close()

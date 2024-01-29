@@ -1,6 +1,6 @@
 ### **commands**
 
-`./ngrok.exe http 8000`
+`ngrok.exe http 8000`
 `unicorn main:app --reload`
 
 ### **env**

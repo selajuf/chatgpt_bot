@@ -1,10 +1,9 @@
 from aiogram import types, Dispatcher
 from loader import bot
 from aiogram.dispatcher import FSMContext
-from openai import OpenAI
+from openai import AsyncOpenAI
 from dotenv import load_dotenv, find_dotenv
 import os
-from bot.handlers.user.commands.start import start_user
 from bot.states.talk import AI
 from bot.database.database import insert_chatlog
 
@@ -12,7 +11,7 @@ load_dotenv(find_dotenv())
 
 openai_token = os.getenv("OPENAI_TOKEN")
 
-client = OpenAI(
+client = AsyncOpenAI(
     base_url="https://api.mandrillai.tech/v1", # endpoint
     api_key=openai_token
 )
@@ -41,15 +40,8 @@ async def chat_talk(message: types.Message, state: FSMContext):
         d = {"role": "user", "content": data[0].get('question')}
         history.append(d)
     print(history)
-    response = client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=history,
-        max_tokens=500
-    )
-    resp_ai = response.choices[0].message.content
+    resp_ai = await generate(history)
     data[-1]['answer'] = resp_ai.replace('\n', '')
-    text = f"{message.from_user.username}\nQ:{data[-1]['question']}\nA:{data[-1]['answer']}"
-    print(text)
     username_tg = f"@{message.from_user.username}"
     question_tg = data[-1]['question']
     answer_tg = data[-1]['answer']
@@ -59,6 +51,16 @@ async def chat_talk(message: types.Message, state: FSMContext):
         await state.update_data(history=[{"question": None, "answer": None}])
     await state.update_data(history=data)
     await bot.edit_message_text(resp_ai, chat_id=message.chat.id, message_id=response_message.message_id, parse_mode='MarkDown')
+
+
+async def generate(history) -> str:
+    response = await client.chat.completions.create(
+        model="gpt-3.5-turbo",
+        messages=history,
+        max_tokens=500
+    )
+    return str(response.choices[0].message.content)
+
 
 def register_handlers_users(dp: Dispatcher):
     dp.register_message_handler(chat_talk, state=AI.talk)
