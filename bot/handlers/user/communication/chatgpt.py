@@ -4,7 +4,9 @@ from aiogram.dispatcher import FSMContext
 from openai import OpenAI
 from dotenv import load_dotenv, find_dotenv
 import os
+from bot.handlers.user.commands.start import start_user
 from bot.states.talk import AI
+from bot.database.database import insert_chatlog
 
 load_dotenv(find_dotenv())
 
@@ -17,6 +19,9 @@ client = OpenAI(
 
 
 async def chat_talk(message: types.Message, state: FSMContext):
+    if message.text == '/start':
+        await message.answer(f'{message.from_user.full_name}, добро пожаловать в бота.\n\nОтправь мне сообщение, а я на него отвечу.')
+        return
     data = await state.get_data()
     data = data.get('history')
     response_message = await message.reply("Генерирую ответ...")
@@ -38,12 +43,17 @@ async def chat_talk(message: types.Message, state: FSMContext):
     print(history)
     response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=history
+        messages=history,
+        max_tokens=500
     )
-    print(response.choices[0].message.content)
     resp_ai = response.choices[0].message.content
     data[-1]['answer'] = resp_ai.replace('\n', '')
     text = f"{message.from_user.username}\nQ:{data[-1]['question']}\nA:{data[-1]['answer']}"
+    print(text)
+    username_tg = f"@{message.from_user.username}"
+    question_tg = data[-1]['question']
+    answer_tg = data[-1]['answer']
+    await insert_chatlog(username_tg, question_tg, answer_tg)
     data.append({"question": None, "answer": None})
     if len(data) > 10:
         await state.update_data(history=[{"question": None, "answer": None}])
