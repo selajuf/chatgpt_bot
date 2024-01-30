@@ -1,7 +1,7 @@
 ### **commands**
 
 `ngrok.exe http 8000`
-`unicorn main:app --reload`
+`uvicorn main:app --reload`
 
 ### **env**
 1. TELEGRAM_TOKEN
