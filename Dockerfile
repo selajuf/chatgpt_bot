@@ -7,4 +7,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . /app/
 
-RUN uvicorn main:app --reload
+CMD ["python", "main.py"]
