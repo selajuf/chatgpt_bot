@@ -3,11 +3,13 @@ from loader import dp, bot
 from dotenv import load_dotenv, find_dotenv
 from bot.misc.set_bot_commands import set_default_commands
 import os
-import json
 from fastapi import FastAPI
 from bot.handlers.user.commands import start
 from bot.handlers.user.communication import chatgpt
 from aiogram.utils import executor
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 load_dotenv(find_dotenv())
 
