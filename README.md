@@ -1,5 +1,7 @@
 ### **commands**
-https://t.me/bottestgpt_bot
+
+bot https://t.me/bottestgpt_bot
+
 docker
 1. `git clone -b executor --single-branch https://github.com/selajuf/chatgpt_bot.git`
 2. `cd chatgpt_bot`
