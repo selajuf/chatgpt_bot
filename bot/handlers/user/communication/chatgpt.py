@@ -62,7 +62,7 @@ async def chat_talk(message: types.Message, state: FSMContext):
 async def generate(history) -> str:
     try:
         response = await client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gemini-pro",
             messages=history,
             max_tokens=500
         )
