@@ -33,7 +33,8 @@ async def chat_talk(message: types.Message, state: FSMContext):
                 d = {"role": "user", "content": data[index]['question']}
                 history.append(d)
             else:
-                d = [{"role": "user", "content": data[index]['question']}, {"role": "assistant", "content": data[index].get('answer')}]
+                d = [{"role": "user", "content": data[index]['question']},
+                     {"role": "assistant", "content": data[index].get('answer')}]
                 history += d
     else:
         data[0]['question'] = message.text
@@ -41,25 +42,37 @@ async def chat_talk(message: types.Message, state: FSMContext):
         history.append(d)
     print(history)
     resp_ai = await generate(history)
-    data[-1]['answer'] = resp_ai.replace('\n', '')
-    username_tg = f"@{message.from_user.username}"
-    question_tg = data[-1]['question']
-    answer_tg = data[-1]['answer']
-    await insert_chatlog(username_tg, question_tg, answer_tg)
-    data.append({"question": None, "answer": None})
-    if len(data) > 10:
-        await state.update_data(history=[{"question": None, "answer": None}])
-    await state.update_data(history=data)
-    await bot.edit_message_text(resp_ai, chat_id=message.chat.id, message_id=response_message.message_id, parse_mode='MarkDown')
+    if resp_ai:
+        data[-1]['answer'] = resp_ai.replace('\n', '')
+        username_tg = f"@{message.from_user.username}"
+        question_tg = data[-1]['question']
+        answer_tg = data[-1]['answer']
+        await insert_chatlog(username_tg, question_tg, answer_tg)
+        data.append({"question": None, "answer": None})
+        if len(data) > 10:
+            await state.update_data(history=[{"question": None, "answer": None}])
+        await state.update_data(history=data)
+        await bot.edit_message_text(resp_ai, chat_id=message.chat.id, message_id=response_message.message_id,
+                                    parse_mode='MarkDown')
+    else:
+        error_message = "Произошла ошибка при генерации ответа."
+        await bot.edit_message_text(error_message, chat_id=message.chat.id, message_id=response_message.message_id)
 
 
 async def generate(history) -> str:
-    response = await client.chat.completions.create(
-        model="gpt-3.5-turbo",
-        messages=history,
-        max_tokens=500
-    )
-    return str(response.choices[0].message.content)
+    try:
+        response = await client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=history,
+            max_tokens=500
+        )
+        if response and response.choices:
+            return str(response.choices[0].message.content)
+        else:
+            return None
+    except Exception as e:
+        print(e)
+        return None
 
 
 def register_handlers_users(dp: Dispatcher):
