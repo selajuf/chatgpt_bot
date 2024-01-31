@@ -1,5 +1,13 @@
 ### **commands**
 
+docker
+1. `git clone -b executor --single-branch https://github.com/selajuf/chatgpt_bot.git`
+2. `cd chatgpt_bot`
+3. `mv example.env .env`
+4. `docker-compose up --build`
+
+windows
+
 `ngrok.exe http 8000`
 `uvicorn main:app --reload`
 
