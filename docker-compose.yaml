@@ -1,6 +1,11 @@
-version: "3"
+version: '3'
 services:
-  chatgptbot:
-    build: .
-    restart: unless-stopped
-    container_name: "chatgptbot"
+  bot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    networks:
+      - mynetwork
+
+networks:
+  mynetwork:

@@ -1,3 +1,30 @@
+# import pymysql
+# from dotenv import load_dotenv, find_dotenv
+# import os
+#
+# load_dotenv(find_dotenv())
+#
+# host = os.getenv("HOST")
+# user = os.getenv("USER")
+# password = os.getenv("PASSWORD")
+# db_name = os.getenv("DB_NAME")
+#
+# try:
+#     connection = pymysql.connect(
+#         host=host,
+#         port=3306,
+#         user=user,
+#         password=password,
+#         database=db_name,
+#         cursorclass=pymysql.cursors.DictCursor
+#     )
+#     print("successfully connected...")
+#     print("#" * 20)
+#
+# except Exception as ex:
+#     print("Connection refused...")
+#     print(ex)
+
 import sqlite3 as sq
 
 db = sq.connect('bot/database/database_users_info.db')
