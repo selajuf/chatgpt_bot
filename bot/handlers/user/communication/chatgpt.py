@@ -6,10 +6,12 @@ from dotenv import load_dotenv, find_dotenv
 import os
 from bot.states.talk import AI
 from bot.database.database import insert_chatlog
+import tiktoken
 
 load_dotenv(find_dotenv())
 
 openai_token = os.getenv("OPENAI_TOKEN")
+max_symbols_limit = int(os.getenv("MAX_SYMBOLS"))
 
 client = AsyncOpenAI(
     base_url="https://api.mandrillai.tech/v1", # endpoint
@@ -19,7 +21,8 @@ client = AsyncOpenAI(
 
 async def chat_talk(message: types.Message, state: FSMContext):
     if message.text == '/start':
-        await message.answer(f'{message.from_user.full_name}, добро пожаловать в бота.\n\nОтправь мне сообщение, а я на него отвечу.')
+        await message.answer(
+            f'{message.from_user.full_name}, добро пожаловать в бота.\n\nОтправь мне сообщение, а я на него отвечу.')
         return
     data = await state.get_data()
     data = data.get('history')
@@ -40,14 +43,23 @@ async def chat_talk(message: types.Message, state: FSMContext):
         data[0]['question'] = message.text
         d = {"role": "user", "content": data[0].get('question')}
         history.append(d)
-    print(history)
+    print(f'Запрос от пользователя: {history}')
+    if message.text and len(message.text) > max_symbols_limit:
+        await bot.edit_message_text(
+            f"Превышено ограничение в {max_symbols_limit} символов. Ваш ответ содержит {len(message.text)} символов.",
+            chat_id=message.chat.id, message_id=response_message.message_id)
+        return
+
     resp_ai = await generate(history)
+
     if resp_ai:
         data[-1]['answer'] = resp_ai.replace('\n', '')
         username_tg = f"@{message.from_user.username}"
         question_tg = data[-1]['question']
         answer_tg = data[-1]['answer']
-        await insert_chatlog(username_tg, question_tg, answer_tg)
+        tokens = await num_tokens_from_string(resp_ai, "cl100k_base")
+        print("Кол-во токенов от нейросети:", tokens)
+        await insert_chatlog(username_tg, question_tg, answer_tg, tokens)
         data.append({"question": None, "answer": None})
         if len(data) > 10:
             await state.update_data(history=[{"question": None, "answer": None}])
@@ -73,6 +85,12 @@ async def generate(history) -> str:
     except Exception as e:
         print(e)
         return None
+
+
+async def num_tokens_from_string(string: str, encoding_name: str) -> int:
+    encoding = tiktoken.get_encoding(encoding_name)
+    num_tokens = len(encoding.encode(string))
+    return num_tokens
 
 
 def register_handlers_users(dp: Dispatcher):
