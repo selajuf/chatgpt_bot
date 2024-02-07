@@ -9,31 +9,46 @@ user = os.getenv("USER")
 password = os.getenv("PASSWORD")
 db_name = os.getenv("DB_NAME")
 
-# try:
-#     connection = pymysql.connect(
-#         host=host,
-#         port=3306,
-#         user=user,
-#         password=password,
-#         database=db_name,
-#         cursorclass=pymysql.cursors.DictCursor
-#     )
-#     print("БД успешно подключена")
-#
-#     with connection.cursor() as cursor:
-#         create_table_query = '''
-#         CREATE TABLE chatbot_data (
-#             username VARCHAR(255),
-#             question TEXT,
-#             answer TEXT,
-#             tokens INT
-#         )
-#         '''
-#         cursor.execute(create_table_query)
-#
-# except Exception as ex:
-#     print("Не удалось установить соединение с БД или добавить данные")
-#     print(ex)
+
+async def create_tables_if_not_exists():
+    try:
+        connection = pymysql.connect(
+            host=host,
+            port=3306,
+            user=user,
+            password=password,
+            database=db_name,
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        print("БД успешно подключена")
+
+        with connection.cursor() as cursor:
+            create_table_chatbot_data = '''
+            CREATE TABLE IF NOT EXISTS chatbot_data (
+                username VARCHAR(255),
+                question TEXT,
+                answer TEXT,
+                tokens INT
+            )
+            '''
+            create_table_users_info = '''
+            CREATE TABLE IF NOT EXISTS users_info (
+                id INTEGER AUTO_INCREMENT PRIMARY KEY,
+                tg_user_id INTEGER,
+                balance FLOAT
+            )
+            '''
+            cursor.execute(create_table_chatbot_data)
+            cursor.execute(create_table_users_info)
+
+        connection.commit()
+
+    except Exception as ex:
+        print("Не удалось установить соединение с БД или добавить данные")
+        print(ex)
+    finally:
+        if connection:
+            connection.close()
 
 
 # Первоначальная регистрация

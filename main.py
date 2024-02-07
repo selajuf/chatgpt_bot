@@ -2,6 +2,7 @@ import logging
 from aiogram import Bot, Dispatcher, types
 from dotenv import load_dotenv, find_dotenv
 from bot.misc.set_bot_commands import set_default_commands
+from bot.database.database import create_tables_if_not_exists
 import os
 from loader import dp, bot
 from bot.handlers.user.commands import start
@@ -37,6 +38,7 @@ async def on_startup(_):
     if webhook_info.url != webhook_path:
         await bot.set_webhook(url=webhook_path)
     await bot.send_message(chat_id=ADMIN_ID, text='Бот запущен')
+    await create_tables_if_not_exists()
 
 
 async def on_shutdown(_):
