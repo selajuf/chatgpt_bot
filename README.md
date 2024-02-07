@@ -1,7 +1,6 @@
 ### **commands**
 
 `ngrok http --domain=daring-partly-sawfish.ngrok-free.app 8000`
-`uvicorn main:app --reload`
 
 ### **env**
 1. TELEGRAM_TOKEN
